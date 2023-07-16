@@ -1,15 +1,15 @@
-﻿using Nest;
+﻿using ElasticPOC.Models;
+using Nest;
 using Newtonsoft.Json;
-using Notification.Application.Models;
 
-namespace Notification.Application.Extensions;
+namespace ElasticPOC.Extensions;
 
 public static class ElasticSearchExtensions
 {
     public static void AddElasticSearch(this IServiceCollection services, IConfiguration configuration)
     {
-        var url = configuration["ELKConfiguration:Uri"];
-        var defaultIndex = configuration["ELKConfiguration:DefaultIndex"];
+        var url = configuration["ELKConfiguration:Uri"] ?? "http://localhost:9200";
+        var defaultIndex = configuration["ELKConfiguration:DefaultIndex"] ?? "default-index";
         var deleteAndReSeed = configuration["ELKConfiguration:DeleteAndReseed"] == "true";
 
         var settings = new ConnectionSettings(new Uri(url)).PrettyJson().DefaultIndex(defaultIndex);

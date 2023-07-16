@@ -1,12 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ElasticPOC.Models;
+using Microsoft.AspNetCore.Mvc;
 using Nest;
-using Notification.Application.Models;
+using Shared.Core.Controller;
 
-namespace Notification.Application.Controllers;
+namespace ElasticPOC.Controllers;
 
-[ApiController]
-[Route("[controller]")]
-public class ProductsController : ControllerBase
+public class ProductsController : BaseController
 {
     private readonly IElasticClient _elasticClient;
     private readonly ILogger<ProductsController> _logger;
@@ -17,7 +16,8 @@ public class ProductsController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet(Name = "GetProducts")]
+    [HttpPost]
+    [Route("GetProducts")]
     public async Task<IActionResult> Get(string keyword)
     {
         if (string.IsNullOrEmpty(keyword))
@@ -34,21 +34,24 @@ public class ProductsController : ControllerBase
         return Ok(results.Documents.ToList());
     }
 
-    [HttpPost(Name = "AddProduct")]
+    [HttpPost]
+    [Route("AddProduct")]
     public async Task<IActionResult> Post(Product product)
     {
         await _elasticClient.IndexDocumentAsync(product);
         return Ok();
     }
 
-    [HttpPost(Name = "UpdateProduct")]
+    [HttpPost]
+    [Route("UpdateProduct")]
     public async Task<IActionResult> Update(Product product)
     {
         await _elasticClient.UpdateAsync<Product>(product.Id, u => u.Doc(product));
         return Ok();
     }
 
-    [HttpPost(Name = "DeleteProduct")]
+    [HttpPost]
+    [Route("DeleteProduct")]
     public async Task<IActionResult> Delete(int id)
     {
         await _elasticClient.DeleteAsync<Product>(id);

@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <RootNamespace>Notification.Application</RootNamespace>
+        <RootNamespace>ElasticPOC</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -25,6 +25,10 @@
         <Content Include="..\.dockerignore">
             <Link>.dockerignore</Link>
         </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Shared.Core\Shared.Core.csproj"/>
     </ItemGroup>
 
 </Project>
