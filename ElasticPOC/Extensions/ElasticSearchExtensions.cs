@@ -1,4 +1,5 @@
 ﻿using Nest;
+using Newtonsoft.Json;
 using Notification.Application.Models;
 
 namespace Notification.Application.Extensions;
@@ -9,6 +10,7 @@ public static class ElasticSearchExtensions
     {
         var url = configuration["ELKConfiguration:Uri"];
         var defaultIndex = configuration["ELKConfiguration:DefaultIndex"];
+        var deleteAndReSeed = configuration["ELKConfiguration:DeleteAndReseed"] == "true";
 
         var settings = new ConnectionSettings(new Uri(url)).PrettyJson().DefaultIndex(defaultIndex);
 
@@ -17,22 +19,47 @@ public static class ElasticSearchExtensions
         var client = new ElasticClient(settings);
         services.AddSingleton<IElasticClient>(client);
 
-        CreateIndex(client, defaultIndex);
+        CreateIndex(client, defaultIndex, deleteAndReSeed);
     }
 
     private static void AddDefaultMappings(ConnectionSettings settings)
     {
-        settings.DefaultMappingFor<Product>(p =>
+        /* For ignoring properties in the mapping
+         settings.DefaultMappingFor<Product>(p =>
             p.Ignore(x => x.Price)
                 .Ignore(x => x.Id)
                 .Ignore(x => x.Quantity));
+        */
     }
 
-    private static void CreateIndex(IElasticClient client, string indexName)
+    private static void CreateIndex(IElasticClient client, string indexName, bool deleteAndReSeed = false)
     {
         if (string.IsNullOrWhiteSpace(indexName))
             return;
 
-        client.Indices.Create(indexName, i => i.Map<Product>(m => m.AutoMap()));
+        if (deleteAndReSeed)
+        {
+            client.Indices.Delete(indexName);
+            client.Indices.Create(indexName, i => i.Map<Product>(m => m.AutoMap()));
+
+            var data = LoadProductsFromFile("seedData.json");
+            if (data == null) return;
+
+            foreach (var product in data)
+                client.IndexDocumentAsync(product);
+        }
+        else
+        {
+            client.Indices.Create(indexName, i => i.Map<Product>(m => m.AutoMap()));
+        }
+    }
+
+    private static IEnumerable<Product>? LoadProductsFromFile(string fileName)
+    {
+        var path = Path.Combine(Directory.GetCurrentDirectory(), fileName);
+        var json = File.ReadAllText(path);
+        var products = JsonConvert.DeserializeObject<List<Product>>(json);
+
+        return products;
     }
 }
