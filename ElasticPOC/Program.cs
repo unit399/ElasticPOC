@@ -14,10 +14,7 @@ builder.Services.AddSwaggerGen(option =>
         Title = "Elastic POC",
         Version = "v1"
     }));
-/*
-builder.Host.UseSerilog((context, configuration) =>
-    configuration.ReadFrom.Configuration(context.Configuration));
-*/
+
 builder.Services.AddElasticSearch(builder.Configuration);
 
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
