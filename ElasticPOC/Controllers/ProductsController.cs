@@ -33,7 +33,7 @@ public class ProductsController : BaseController
                 )
             ).Size(1000)
         );
-        
+
         _logger.LogInformation("A request has been made for term: " + keyword);
 
         return Ok(results.Documents.ToList());
