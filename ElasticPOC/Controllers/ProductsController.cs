@@ -21,7 +21,10 @@ public class ProductsController : BaseController
     public async Task<IActionResult> Get(string keyword)
     {
         if (string.IsNullOrEmpty(keyword))
+        {
+            _logger.LogError("Keyword cannot be empty");
             return BadRequest("Keyword cannot be empty");
+        }
 
         var results = await _elasticClient.SearchAsync<Product>(
             s => s.Query(
@@ -30,6 +33,8 @@ public class ProductsController : BaseController
                 )
             ).Size(1000)
         );
+        
+        _logger.LogInformation("A request has been made for term: " + keyword);
 
         return Ok(results.Documents.ToList());
     }
